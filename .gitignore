@@ -1,0 +1,62 @@
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.log
+
+# Virtual Environment
+venv/
+.env
+.env.*
+
+# =========================
+# HuggingFace / Models
+# =========================
+.cache/
+**/.cache/
+hf_cache/
+models/
+
+# =========================
+# FAISS / Vector Store (BIG FILES)
+# =========================
+data/vector_store/faiss_index
+data/vector_store/*.index
+data/vector_store/*.faiss
+data/vector_store/*.pkl
+
+# =========================
+# Transcripts (optional – if large/private)
+# =========================
+data/transcrib/
+data/transcripts/
+*.json
+
+# =========================
+# OS / Editor
+# =========================
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# =========================
+# FastAPI / Uvicorn
+# =========================
+*.pid
+*.sock
+
+# =========================
+# Jupyter / Colab
+# =========================
+.ipynb_checkpoints/
+*.ipynb
+
+# =========================
+# Node / n8n (if used)
+# =========================
+node_modules/
+.npm/
