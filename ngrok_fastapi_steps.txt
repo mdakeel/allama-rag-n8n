@@ -1,0 +1,76 @@
+HOW TO RUN FASTAPI WITH NGROK (STEP-BY-STEP)
+
+STEP 1: OPEN PROJECT FOLDER
+--------------------------------
+Open Command Prompt (CMD) or Terminal
+Go to your FastAPI project folder
+
+Example:
+cd E:\ML-Projects\allama-rag-n8n
+
+
+STEP 2: ACTIVATE VIRTUAL ENVIRONMENT (if you have one)
+------------------------------------------------------
+Windows:
+venv\Scripts\activate
+
+Linux / Mac:
+source venv/bin/activate
+
+
+STEP 3: RUN FASTAPI SERVER
+---------------------------
+Run this command:
+
+uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+Check in browser:
+http://127.0.0.1:8000/docs
+
+If Swagger opens, FastAPI is running correctly.
+
+
+STEP 4: OPEN A NEW TERMINAL (IMPORTANT)
+---------------------------------------
+DO NOT stop FastAPI.
+Open a NEW CMD / Terminal window.
+
+
+STEP 5: RUN NGROK
+-----------------
+Run this command:
+
+ngrok http 8000
+
+
+STEP 6: COPY NGROK HTTPS URL
+----------------------------
+You will see something like:
+
+Forwarding https://abc123.ngrok-free.app -> http://localhost:8000
+
+Copy the HTTPS URL.
+
+
+STEP 7: USE THIS URL IN N8N
+---------------------------
+Example endpoint:
+
+https://abc123.ngrok-free.app/retrieve
+
+
+STEP 8: KEEP BOTH TERMINALS RUNNING
+-----------------------------------
+Terminal 1: FastAPI running
+Terminal 2: ngrok running
+
+If you close any terminal, it will stop working.
+
+
+SUMMARY (SHORT)
+----------------
+1. Run FastAPI
+2. Check Swagger
+3. Run ngrok
+4. Copy HTTPS URL
+5. Use it in n8n
