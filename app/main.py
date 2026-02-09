@@ -1,38 +1,45 @@
 import os
-import requests
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
+from huggingface_hub import hf_hub_download
 from app.retrieval import VectorRetriever
 from app.schemas import SearchRequest, SearchResponse
 
-FAISS_URL = "https://drive.usercontent.google.com/download?id=1rmVnQWDCwv8u0XpZautijetlDpKn1LBr&export=download&authuser=0"
+# HuggingFace dataset repo (तुम्हारा repo ID)
+REPO_ID = "aakiltayyab/quran-faiss-index"
 
-CHUNKS_URL = "https://drive.google.com/uc?export=download&id=1DBocNIeO5nhxDwPpEAVOR55iyCqkqaRs"
-
-FAISS_PATH = "/tmp/faiss.index"
-CHUNK_PATH = "/tmp/chunks.pkl"
-
+# Model name (same as FAISS embeddings)
 MODEL_NAME = "intfloat/multilingual-e5-large"
+
+# HuggingFace token (optional if repo is public)
 HF_TOKEN = os.getenv("HF_TOKEN")
 
-app = FastAPI(title="Quran RAG Retrieval API", version="1.0.0", default_response_class=JSONResponse)
+app = FastAPI(
+    title="Quran RAG Retrieval API",
+    version="1.0.0",
+    default_response_class=JSONResponse
+)
 
 retriever: VectorRetriever | None = None
-
-def download_file(url: str, path: str):
-    r = requests.get(url)
-    r.raise_for_status()
-    if "text/html" in r.headers.get("Content-Type", ""):
-        raise RuntimeError(f"Download failed: {url} returned HTML instead of binary file")
-    with open(path, "wb") as f:
-        f.write(r.content)
-
 
 @app.on_event("startup")
 def load_resources():
     global retriever
-    download_file(FAISS_URL, FAISS_PATH)
-    download_file(CHUNKS_URL, CHUNK_PATH)
+
+    # HuggingFace Hub से files download करो
+    FAISS_PATH = hf_hub_download(
+        repo_id=REPO_ID,
+        filename="faiss.index",
+        repo_type="dataset"
+    )
+
+    CHUNK_PATH = hf_hub_download(
+        repo_id=REPO_ID,
+        filename="chunks.pkl",
+        repo_type="dataset"
+    )
+
+    # Retriever initialize करो
     retriever = VectorRetriever(
         faiss_path=FAISS_PATH,
         chunk_path=CHUNK_PATH,
@@ -44,5 +51,6 @@ def load_resources():
 def retrieve(req: SearchRequest):
     if not retriever:
         raise HTTPException(status_code=500, detail="Retriever not initialized")
+
     results = retriever.search(query=req.query, top_k=req.top_k)
     return {"query": req.query, "results": results}
