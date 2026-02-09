@@ -5,7 +5,8 @@ from fastapi.responses import JSONResponse
 from app.retrieval import VectorRetriever
 from app.schemas import SearchRequest, SearchResponse
 
-FAISS_URL = "https://drive.google.com/uc?export=download&id=1rmVnQWDCwv8u0XpZautijetlDpKn1LBr"
+FAISS_URL = "https://drive.usercontent.google.com/download?id=1rmVnQWDCwv8u0XpZautijetlDpKn1LBr&export=download&authuser=0"
+
 CHUNKS_URL = "https://drive.google.com/uc?export=download&id=1DBocNIeO5nhxDwPpEAVOR55iyCqkqaRs"
 
 FAISS_PATH = "/tmp/faiss.index"
@@ -21,8 +22,11 @@ retriever: VectorRetriever | None = None
 def download_file(url: str, path: str):
     r = requests.get(url)
     r.raise_for_status()
+    if "text/html" in r.headers.get("Content-Type", ""):
+        raise RuntimeError(f"Download failed: {url} returned HTML instead of binary file")
     with open(path, "wb") as f:
         f.write(r.content)
+
 
 @app.on_event("startup")
 def load_resources():
