@@ -23,10 +23,10 @@ models/
 # =========================
 # FAISS / Vector Store (BIG FILES)
 # =========================
-data/vector_store/faiss_index
-data/vector_store/*.index
-data/vector_store/*.faiss
-data/vector_store/*.pkl
+# data/vector_store/faiss_index
+# data/vector_store/*.index
+# data/vector_store/*.faiss
+# data/vector_store/*.pkl
 
 # =========================
 # Transcripts (optional – if large/private)
