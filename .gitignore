@@ -31,9 +31,9 @@ data/vector_store/*.pkl
 # =========================
 # Transcripts (optional – if large/private)
 # =========================
-data/transcrib/
-data/transcripts/
-*.json
+
+
+
 
 # =========================
 # OS / Editor

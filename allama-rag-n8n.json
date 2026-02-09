@@ -1,0 +1,206 @@
+{
+  "name": "allama-rag-n8n",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "// Get the first item from the array\nconst input = $input.first().json;\n\n// Access the body object\nconst body = input.body || {};\n\nconst query = body.query || \"\";\nconst results = body.results || [];\n\nlet allChunks = \"\";\nresults.forEach((r, i) => {\n  allChunks += `Chunk ${i + 1}:\\n${r.text}\\n${r.youtube_url}\\n\\n`;\n});\n\nreturn [{\n  json: {\n    query,\n    context: allChunks\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        288,
+        -16
+      ],
+      "id": "d9a62f1a-f962-42b4-b24e-d56bb78d6c10",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an AI assistant.\n\nInput:\n- User Query: {{$json.query}}\n- Context: {{$json.context}}\n\nYour task is to generate an answer using ONLY the provided context\nand a small amount of natural phrasing. Do NOT add facts outside the context.\n\n────────────────────────\n🌍 Language Rules\n────────────────────────\n- Always reply in the SAME language as the user query.\n- Do not translate or mix languages.\n- English → English\n- Roman Hindi → Roman Hindi\n- Hindi → Hindi\n- Urdu → Roman Hindi\n\n────────────────────────\n✍️ Answer Rules\n────────────────────────\n- Max 150 words\n- 6–10 short lines\n- Short, clear, human-like\n- Use headings and emojis (NO markdown symbols)\n- Answer must stay within the context boundaries\n- You may combine context lines naturally, but never invent data\n\n────────────────────────\n🎥 References Rule\n────────────────────────\n- If context contains YouTube links:\n  - ALWAYS show exactly 3 references\n  - Pick the first 3 relevant YouTube links from context\n- If no YouTube links exist, do NOT add References section\n\n────────────────────────\n🧾 Output Format (STRICT)\n────────────────────────\n\n📌 Question:\n{{$json.query}}\n\n\n🔎 Explanation:\nAnswer here – same language as query, short and engaging, emojis allowed\n\n\n📚 References:\n1) YouTube link 1  \n2) YouTube link 2  \n3) YouTube link 3\n\n────────────────────────\n🤝 Closing Line Rule (MANDATORY)\n────────────────────────\n- End every answer with ONE unique creative line (Example : also add in the end if ther no other question question Agar zindagi rahi to fir bat karte hain )\n- Must be in the SAME language as the query\n- Never repeat the same closing line\n- Example:\n  Agar koi aur sawal ho to bejhijhak poochna — jazakAllah khair 🌙\n\nDo not explain the rules in your final output.\nOnly return the formatted answer.\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        464,
+        -16
+      ],
+      "id": "b84d1039-843f-4659-add3-2af05921afe8",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        352,
+        192
+      ],
+      "id": "4826b8b2-9672-4803-9e93-484e0e31506a",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "GupwsWPCaDnC401l",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -96,
+        -16
+      ],
+      "id": "460cc0ae-1ec7-43ea-b997-cab317be84b0",
+      "name": "Telegram Trigger",
+      "webhookId": "f5bb5230-2eb7-4639-b5cd-875ba27a43ee",
+      "credentials": {
+        "telegramApi": {
+          "id": "sc1f8KMNO2msaW5A",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        816,
+        -16
+      ],
+      "id": "8a110711-0c28-451a-b42c-7517368a2c09",
+      "name": "Send a text message",
+      "webhookId": "a199f369-c43d-494b-852f-a168ec003f7d",
+      "credentials": {
+        "telegramApi": {
+          "id": "sc1f8KMNO2msaW5A",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://untiring-glamourously-sena.ngrok-free.dev/retrieve",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "={{ $json.message.text }}"
+            },
+            {
+              "name": "top_k",
+              "value": "20"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        112,
+        -16
+      ],
+      "id": "019ede98-6fc0-4215-8b81-70c54297ceb8",
+      "name": "HTTP Request"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "83a5dfc4-058f-4e09-8f39-57f6c20b2147",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7e271a5af5b233983632e60f0614906a05ce003cf3f4844ce22d3c8419f234d5"
+  },
+  "id": "lX7SjDlyJDenvPSzZT82l",
+  "tags": []
+}
