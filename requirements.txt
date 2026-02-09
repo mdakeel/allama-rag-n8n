@@ -2,5 +2,6 @@ fastapi
 uvicorn
 faiss-cpu
 sentence-transformers
+huggingface-hub
 numpy
 requests

@@ -1,41 +1,26 @@
-import faiss
 import pickle
 import numpy as np
-from sentence_transformers import SentenceTransformer
+import faiss
+from huggingface_hub import InferenceClient
 from typing import List, Dict
 
 class VectorRetriever:
-    def __init__(
-        self,
-        faiss_path: str,
-        chunk_path: str,
-        model_name: str,
-        hf_token: str = None   # <-- token optional
-    ):
-        # Step 1: Model load (token handled here)
-        if hf_token:
-            self.model = SentenceTransformer(model_name, use_auth_token=hf_token)
-        else:
-            self.model = SentenceTransformer(model_name)
+    def __init__(self, faiss_path: str, chunk_path: str, model_name: str, hf_token: str):
+        # HuggingFace Inference API client
+        self.client = InferenceClient(model_name, token=hf_token)
 
-        # Step 2: FAISS index load
+        # FAISS index load
         self.index = faiss.read_index(faiss_path)
 
-        # Step 3: Chunks load (UTF-8 safe)
+        # Chunks load
         with open(chunk_path, "rb") as f:
             self.chunks = pickle.load(f, encoding="utf-8")
 
-        # Step 4: Validation
-        if self.index.d == 0 or len(self.chunks) == 0:
-            raise RuntimeError("FAISS index or chunks not loaded properly")
-
     def _embed_query(self, query: str) -> np.ndarray:
         query = "query: " + query
-        vector = self.model.encode(
-            [query],
-            normalize_embeddings=True
-        )
-        return np.array(vector).astype("float32")
+        # Remote embedding via HF API
+        vector = self.client.feature_extraction(query)
+        return np.array([vector], dtype="float32")
 
     def search(self, query: str, top_k: int = 20) -> List[Dict]:
         q_vec = self._embed_query(query)
@@ -45,14 +30,10 @@ class VectorRetriever:
         for idx in indices[0]:
             if idx == -1:
                 continue
-
             chunk = self.chunks[idx]
-
-            # Text को UTF-8 safe decode करो
             text_value = chunk.get("text")
             if isinstance(text_value, bytes):
                 text_value = text_value.decode("utf-8", errors="ignore")
-
             results.append({
                 "text": text_value,
                 "video_title": chunk.get("title"),
@@ -60,5 +41,4 @@ class VectorRetriever:
                 "start": chunk.get("start"),
                 "end": chunk.get("end"),
             })
-
         return results
