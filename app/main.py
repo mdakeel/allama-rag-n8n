@@ -2,8 +2,8 @@ import os
 import requests
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
-from retrieval import VectorRetriever
-from schemas import SearchRequest, SearchResponse
+from app.retrieval import VectorRetriever
+from app.schemas import SearchRequest, SearchResponse
 
 # Google Drive direct download links
 FAISS_URL = "https://drive.google.com/uc?export=download&id=1rmVnQWDCwv8u0XpZautijetlDpKn1LBr"
