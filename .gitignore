@@ -24,6 +24,7 @@ models/
 # FAISS / Vector Store (BIG FILES)
 # =========================
 data/vector_store/faiss_index
+data/vector_store/chunks.pkl
 data/vector_store/*.index
 data/vector_store/*.faiss
 data/vector_store/*.pkl
