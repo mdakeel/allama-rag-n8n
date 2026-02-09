@@ -1,4 +1,3 @@
-# retrieval.py
 import faiss
 import pickle
 import numpy as np
@@ -11,9 +10,13 @@ class VectorRetriever:
         faiss_path: str,
         chunk_path: str,
         model_name: str,
+        hf_token: str = None   # <-- token optional
     ):
-        # Step 1: Model load
-        self.model = SentenceTransformer(model_name)
+        # Step 1: Model load (token handled here)
+        if hf_token:
+            self.model = SentenceTransformer(model_name, use_auth_token=hf_token)
+        else:
+            self.model = SentenceTransformer(model_name)
 
         # Step 2: FAISS index load
         self.index = faiss.read_index(faiss_path)

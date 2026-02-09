@@ -44,7 +44,7 @@ def load_resources():
         faiss_path=FAISS_PATH,
         chunk_path=CHUNK_PATH,
         model_name=MODEL_NAME,
-        use_auth_token=HF_TOKEN
+        hf_token=HF_TOKEN   # <-- correct argument name
     )
 
 @app.post("/retrieve", response_model=SearchResponse)
