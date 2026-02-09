@@ -59,22 +59,3 @@ class VectorRetriever:
             })
 
         return results
-
-
-# #  Direct test run (same file में)
-# if __name__ == "__main__":
-#     faiss_path = "faiss_index.bin"
-#     chunk_path = "chunks.pkl"
-#     model_name = "sentence-transformers/all-MiniLM-L6-v2"
-
-#     retriever = VectorRetriever(faiss_path, chunk_path, model_name)
-
-#     query = "huroof e muqattat"
-#     results = retriever.search(query, top_k=10)
-
-#     print(f"Query: {query}\n")
-#     for i, r in enumerate(results, 1):
-#         print(f"Chunk {i}:")
-#         print(f"Text: {r['text']}")
-#         print(f"Source: {r['video_title']}")
-#         print(f"URL: {r['youtube_url']} ({r['start']} - {r['end']})\n")

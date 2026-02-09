@@ -3,3 +3,4 @@ uvicorn
 faiss-cpu
 sentence-transformers
 numpy
+requests
